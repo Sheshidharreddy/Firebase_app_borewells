@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/vehicle_model.dart';
 import '../services/vehicle_service.dart';
+import '../services/test_vehicle_service.dart';
 import 'add_edit_vehicle_screen.dart';
 
 class VehicleListScreen extends StatefulWidget {
@@ -12,10 +13,12 @@ class VehicleListScreen extends StatefulWidget {
 
 class _VehicleListScreenState extends State<VehicleListScreen> {
   final VehicleService _vehicleService = VehicleService();
+  final TestVehicleService _testVehicleService = TestVehicleService();
   final TextEditingController _searchController = TextEditingController();
   List<VehicleModel> _allVehicles = [];
   List<VehicleModel> _filteredVehicles = [];
   bool _isLoading = true;
+  bool _useTestMode = true; // Enable test mode for now
 
   @override
   void initState() {
@@ -34,7 +37,14 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
       setState(() {
         _isLoading = true;
       });
-      final vehicles = await _vehicleService.getAllVehicles();
+      
+      List<VehicleModel> vehicles;
+      if (_useTestMode) {
+        vehicles = await _testVehicleService.getAllVehicles();
+      } else {
+        vehicles = await _vehicleService.getAllVehicles();
+      }
+      
       setState(() {
         _allVehicles = vehicles;
         _filteredVehicles = vehicles;
@@ -430,7 +440,12 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
     Navigator.of(context).pop(); // Close dialog
     
     try {
-      await _vehicleService.deleteVehicle(vehicle.id);
+      if (_useTestMode) {
+        await _testVehicleService.deleteVehicle(vehicle.id);
+      } else {
+        await _vehicleService.deleteVehicle(vehicle.id);
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${vehicle.name} deleted successfully')),

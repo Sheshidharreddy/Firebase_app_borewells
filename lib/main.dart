@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'widgets/auth_wrapper.dart';
 import 'screens/login_screen.dart';
 import 'screens/admin_home_screen.dart';
-import 'screens/driver_dashboard_screen.dart';
+import 'screens/user_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +24,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: AuthWrapper(),
+      home: const LoginScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/admin': (context) => AdminHomeScreen(),
-        '/driver': (context) => DriverDashboardScreen(),
+        '/admin': (context) => const AdminHomeScreen(),
+        '/user': (context) => const UserHomeScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

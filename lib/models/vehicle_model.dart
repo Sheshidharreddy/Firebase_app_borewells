@@ -24,6 +24,8 @@ class VehicleModel {
   final String? year;
   final String? color;
   final double? capacity;
+  final double? hours;     // Total operating hours
+  final double? km;        // Total kilometers/mileage
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -40,6 +42,8 @@ class VehicleModel {
     this.year,
     this.color,
     this.capacity,
+    this.hours,
+    this.km,
     this.notes,
     required this.createdAt,
     required this.updatedAt,
@@ -65,6 +69,8 @@ class VehicleModel {
       year: map['year'],
       color: map['color'],
       capacity: map['capacity']?.toDouble(),
+      hours: map['hours']?.toDouble(),
+      km: map['km']?.toDouble(),
       notes: map['notes'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         map['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
@@ -88,6 +94,8 @@ class VehicleModel {
       'year': year,
       'color': color,
       'capacity': capacity,
+      'hours': hours,
+      'km': km,
       'notes': notes,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
@@ -107,6 +115,8 @@ class VehicleModel {
     String? year,
     String? color,
     double? capacity,
+    double? hours,
+    double? km,
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -123,6 +133,8 @@ class VehicleModel {
       year: year ?? this.year,
       color: color ?? this.color,
       capacity: capacity ?? this.capacity,
+      hours: hours ?? this.hours,
+      km: km ?? this.km,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),

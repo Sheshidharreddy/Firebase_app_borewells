@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/test_auth_service.dart';
+import '../services/role_service.dart';
 import '../models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,11 +13,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
+  final TestAuthService _testAuthService = TestAuthService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  final bool _useTestMode = true; // Enable test mode for now
 
   @override
   void dispose() {
@@ -59,7 +63,84 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 24),
+
+                // Quick Test Login Section (only in test mode)
+                if (_useTestMode) ...[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.science, color: Colors.blue, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Quick Test Login',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'For testing purposes, click below to login as:',
+                          style: TextStyle(color: Colors.blue[700], fontSize: 12),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _quickLogin('admin@servicemaster.com'),
+                                icon: Icon(Icons.admin_panel_settings, size: 16),
+                                label: const Text('Admin User'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[100],
+                                  foregroundColor: Colors.red[800],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _quickLogin('driver@servicemaster.com'),
+                                icon: Icon(Icons.person, size: 16),
+                                label: const Text('Driver/User'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[100],
+                                  foregroundColor: Colors.green[800],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'OR LOGIN MANUALLY',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                const SizedBox(height: 24),
 
                 // Login Form
                 Card(
@@ -180,28 +261,50 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Demo Accounts Info
                 Card(
-                  color: Colors.blue[50],
+                  color: _useTestMode ? Colors.green[50] : Colors.blue[50],
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        Text(
-                          'Demo Accounts',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue[800],
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _useTestMode ? Icons.check_circle : Icons.info,
+                              color: _useTestMode ? Colors.green : Colors.blue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _useTestMode ? 'Test Mode Active' : 'Demo Accounts',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: _useTestMode ? Colors.green[800] : Colors.blue[800],
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Admin: admin@servicemaster.com\nDriver: driver@servicemaster.com\nPassword: 123456',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.blue[700],
+                            color: _useTestMode ? Colors.green[700] : Colors.blue[700],
                           ),
                           textAlign: TextAlign.center,
                         ),
+                        if (_useTestMode) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            '(No Firebase needed - works offline)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.green[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -222,15 +325,24 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final user = await _authService.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      UserModel? user;
+      
+      if (_useTestMode) {
+        // Use test authentication for demonstration
+        user = await _testAuthService.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+      } else {
+        // Use Firebase authentication (when configured)
+        user = await _authService.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+      }
 
-      if (user != null) {
-        if (mounted) {
-          _navigateBasedOnRole(user);
-        }
+      if (user != null && mounted) {
+        _navigateBasedOnRole(user);
       }
     } catch (e) {
       if (mounted) {
@@ -251,13 +363,27 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateBasedOnRole(UserModel user) {
-    if (user.isAdmin) {
-      Navigator.of(context).pushReplacementNamed('/admin');
-    } else if (user.isDriver) {
-      Navigator.of(context).pushReplacementNamed('/driver');
+    // Navigate directly to the appropriate screen based on user role
+    String targetRoute;
+    if (user.role == 'admin') {
+      targetRoute = '/admin';
     } else {
-      // Default to driver dashboard
-      Navigator.of(context).pushReplacementNamed('/driver');
+      targetRoute = '/user';
     }
+    
+    // Navigate to the appropriate screen and clear the navigation stack
+    Navigator.of(context).pushNamedAndRemoveUntil(targetRoute, (route) => false);
+  }
+
+  Future<void> _quickLogin(String email) async {
+    // Set the form fields and trigger regular login
+    _emailController.text = email;
+    _passwordController.text = '123456'; // Default test password
+    
+    // Switch test user in RoleService for proper role determination
+    RoleService().switchTestUser(email);
+    
+    // Trigger the regular login flow
+    _signIn();
   }
 }
