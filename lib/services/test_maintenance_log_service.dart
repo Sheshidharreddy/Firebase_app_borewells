@@ -12,7 +12,7 @@ class TestMaintenanceLogService {
       km: 12500.0,
       notes: 'Used synthetic oil. Changed oil filter as well. Next change due at 15,000 km.',
       performedBy: 'Admin User',
-      vehicleId: 'vehicle1',
+      vehicleId: '1',
       createdAt: DateTime.now().subtract(const Duration(days: 15)),
       updatedAt: DateTime.now().subtract(const Duration(days: 15)),
     ),
@@ -24,7 +24,7 @@ class TestMaintenanceLogService {
       km: 12000.0,
       notes: 'Front brake pads at 40% wear. Rear pads at 60%. No immediate action needed.',
       performedBy: 'Admin User',
-      vehicleId: 'vehicle2',
+      vehicleId: '2',
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
       updatedAt: DateTime.now().subtract(const Duration(days: 30)),
     ),
@@ -36,7 +36,7 @@ class TestMaintenanceLogService {
       km: 11500.0,
       notes: 'Rotated all four tires. Checked tire pressure and adjusted to recommended levels.',
       performedBy: 'Driver User',
-      vehicleId: 'vehicle1',
+      vehicleId: '1',
       createdAt: DateTime.now().subtract(const Duration(days: 45)),
       updatedAt: DateTime.now().subtract(const Duration(days: 45)),
     ),
@@ -48,7 +48,7 @@ class TestMaintenanceLogService {
       km: 11000.0,
       notes: 'Replaced engine air filter. Old filter was quite dirty.',
       performedBy: 'Admin User',
-      vehicleId: 'vehicle3',
+      vehicleId: '3',
       createdAt: DateTime.now().subtract(const Duration(days: 60)),
       updatedAt: DateTime.now().subtract(const Duration(days: 60)),
     ),
@@ -60,7 +60,7 @@ class TestMaintenanceLogService {
       km: 10000.0,
       notes: 'Full transmission fluid change and filter replacement. Transmission running smoothly.',
       performedBy: 'Admin User',
-      vehicleId: 'vehicle2',
+      vehicleId: '2',
       createdAt: DateTime.now().subtract(const Duration(days: 90)),
       updatedAt: DateTime.now().subtract(const Duration(days: 90)),
     ),
@@ -80,7 +80,7 @@ class TestMaintenanceLogService {
 
   // Get logs for a specific vehicle
   Stream<List<MaintenanceLog>> getLogsByVehicle(String vehicleId) {
-    return Stream.periodic(const Duration(milliseconds: 500), (count) {
+    return Stream.periodic(const Duration(milliseconds: 100), (count) { // Reduced delay
       final filteredLogs = _logs
           .where((log) => log.vehicleId == vehicleId)
           .toList()
@@ -116,7 +116,7 @@ class TestMaintenanceLogService {
   // Add a new maintenance log
   Future<String> addLog(MaintenanceLog log) async {
     // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 50)); // Reduced delay
 
     final now = DateTime.now();
     final newLog = log.copyWith(

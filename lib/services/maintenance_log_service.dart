@@ -116,7 +116,7 @@ class MaintenanceLogService {
     return _firestore
         .collection(collectionName)
         .where('itemName', isGreaterThanOrEqualTo: searchTerm)
-        .where('itemName', isLessThanOrEqualTo: searchTerm + '\uf8ff')
+        .where('itemName', isLessThanOrEqualTo: '$searchTerm\uf8ff')
         .orderBy('itemName')
         .orderBy('date', descending: true)
         .snapshots()

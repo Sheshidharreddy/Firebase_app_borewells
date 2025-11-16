@@ -13,6 +13,8 @@ class TestVehicleService {
       year: '2023',
       color: 'White',
       capacity: 2.5,
+      hours: 1250.5,
+      km: 18500.0,
       notes: 'Primary service vehicle for repairs',
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
       updatedAt: DateTime.now().subtract(const Duration(days: 1)),
@@ -27,6 +29,8 @@ class TestVehicleService {
       year: '2022',
       color: 'Blue',
       capacity: 1.8,
+      hours: 950.8,
+      km: 22300.0,
       driverId: 'driver123',
       driverName: 'John Doe',
       notes: 'Equipment delivery vehicle',
@@ -43,6 +47,8 @@ class TestVehicleService {
       year: '2021',
       color: 'Red',
       capacity: 0.5,
+      hours: 675.2,
+      km: 15800.0,
       notes: 'Quick response vehicle for urgent calls',
       createdAt: DateTime.now().subtract(const Duration(days: 90)),
       updatedAt: DateTime.now().subtract(const Duration(hours: 6)),
@@ -51,13 +57,13 @@ class TestVehicleService {
 
   // Get all vehicles
   Future<List<VehicleModel>> getAllVehicles() async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 100)); // Reduced delay
     return List.from(_vehicles);
   }
 
   // Get vehicle by ID
   Future<VehicleModel?> getVehicleById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 50)); // Reduced delay
     try {
       return _vehicles.firstWhere((vehicle) => vehicle.id == id);
     } catch (e) {

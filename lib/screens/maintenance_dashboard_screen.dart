@@ -7,7 +7,7 @@ import '../screens/add_edit_maintenance_log_screen.dart';
 import '../screens/maintenance_log_list_screen.dart';
 
 class MaintenanceDashboardScreen extends StatefulWidget {
-  const MaintenanceDashboardScreen({Key? key}) : super(key: key);
+  const MaintenanceDashboardScreen({super.key});
 
   @override
   State<MaintenanceDashboardScreen> createState() => _MaintenanceDashboardScreenState();
@@ -82,8 +82,8 @@ class _MaintenanceDashboardScreenState extends State<MaintenanceDashboardScreen>
             ),
           );
         },
-        child: const Icon(Icons.add),
         tooltip: 'Log Maintenance',
+        child: const Icon(Icons.add),
       ),
     );
   }

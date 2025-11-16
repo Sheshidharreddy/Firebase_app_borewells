@@ -5,11 +5,13 @@ import '../services/test_maintenance_log_service.dart';
 
 class AddEditMaintenanceLogScreen extends StatefulWidget {
   final MaintenanceLog? log;
+  final String? userId;
 
   const AddEditMaintenanceLogScreen({
-    Key? key,
+    super.key,
     this.log,
-  }) : super(key: key);
+    this.userId,
+  });
 
   @override
   State<AddEditMaintenanceLogScreen> createState() => _AddEditMaintenanceLogScreenState();

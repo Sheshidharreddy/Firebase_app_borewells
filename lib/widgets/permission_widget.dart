@@ -10,13 +10,13 @@ class PermissionWidget extends StatefulWidget {
   final bool showFallback;
 
   const PermissionWidget({
-    Key? key,
+    super.key,
     this.allowed,
     this.permission,
     required this.child,
     this.fallback,
     this.showFallback = false,
-  }) : super(key: key);
+  });
 
   @override
   State<PermissionWidget> createState() => _PermissionWidgetState();
@@ -89,13 +89,13 @@ class PermissionDisabledWidget extends StatefulWidget {
   final String? tooltip;
 
   const PermissionDisabledWidget({
-    Key? key,
+    super.key,
     this.allowed,
     this.permission,
     required this.child,
     this.disabledOpacity = 0.5,
     this.tooltip,
-  }) : super(key: key);
+  });
 
   @override
   State<PermissionDisabledWidget> createState() => _PermissionDisabledWidgetState();
@@ -175,19 +175,19 @@ class AdminOnlyWidget extends StatelessWidget {
   final bool showFallback;
 
   const AdminOnlyWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.fallback,
     this.showFallback = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return PermissionWidget(
       permission: Permission.viewAdminDashboard,
-      child: child,
       fallback: fallback,
       showFallback: showFallback,
+      child: child,
     );
   }
 }
@@ -199,11 +199,11 @@ class UserOnlyWidget extends StatelessWidget {
   final bool showFallback;
 
   const UserOnlyWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.fallback,
     this.showFallback = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -233,10 +233,10 @@ class RoleBasedAppBarActions extends StatelessWidget {
   final List<Widget> userActions;
 
   const RoleBasedAppBarActions({
-    Key? key,
+    super.key,
     required this.adminActions,
     required this.userActions,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -264,11 +264,11 @@ class RoleBasedDrawer extends StatelessWidget {
   final List<Widget> commonItems;
 
   const RoleBasedDrawer({
-    Key? key,
+    super.key,
     required this.adminItems,
     required this.userItems,
     required this.commonItems,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -304,12 +304,12 @@ class PermissionFormField extends StatelessWidget {
   final String? disabledMessage;
 
   const PermissionFormField({
-    Key? key,
+    super.key,
     this.allowed,
     this.permission,
     required this.child,
     this.disabledMessage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

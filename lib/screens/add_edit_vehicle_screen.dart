@@ -36,7 +36,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
   VehicleType _selectedType = VehicleType.truck;
   VehicleStatus _selectedStatus = VehicleStatus.available;
   bool _isLoading = false;
-  bool _useTestMode = true; // Enable test mode for now
+  final bool _useTestMode = true; // Enable test mode for now
   bool _isAdmin = false;
 
   @override
@@ -443,7 +443,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
     required void Function(T?) onChanged,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
