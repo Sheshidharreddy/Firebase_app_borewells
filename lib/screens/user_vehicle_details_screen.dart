@@ -4,6 +4,9 @@ import '../models/maintenance_log_model.dart';
 import '../models/simple_maintenance_item.dart';
 import '../services/test_maintenance_log_service.dart';
 import 'user_maintenance_completion_screen.dart';
+import 'maintenance_detail_screen.dart';
+import 'add_custom_maintenance_screen.dart';
+import 'simple_all_logs_screen.dart' show AllMaintenanceLogsScreen;
 
 class UserVehicleDetailsScreen extends StatefulWidget {
   final VehicleModel vehicle;
@@ -53,6 +56,7 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
 
   Widget _buildVehicleInfoCard() {
     return Card(
+      elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -61,8 +65,8 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
             Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: Colors.blue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -70,7 +74,7 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                   child: const Icon(
                     Icons.directions_car,
                     color: Colors.blue,
-                    size: 30,
+                    size: 35,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -81,15 +85,25 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                       Text(
                         widget.vehicle.name,
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        widget.vehicle.licensePlate,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
+                      const SizedBox(height: 4),
+                      // Prominent license plate display
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade700,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          widget.vehicle.licensePlate,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -98,30 +112,85 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                 _buildStatusBadge(),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             const Divider(),
             const SizedBox(height: 16),
             
-            // Vehicle Details
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInfoTile(
-                    'Type', 
-                    widget.vehicle.typeDisplayName,
-                    Icons.category,
+            // Vehicle Type and Model prominently displayed
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Icon(Icons.category, color: Colors.blue, size: 24),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Vehicle Type',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.vehicle.typeDisplayName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 60,
+                        color: Colors.grey[300],
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Icon(Icons.info, color: Colors.blue, size: 24),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Model',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.vehicle.model ?? 'Not specified',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: _buildInfoTile(
-                    'Model', 
-                    widget.vehicle.model ?? 'N/A',
-                    Icons.info,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
+            
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -290,14 +359,19 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
     final item = task['item'] as SimpleMaintenanceItem;
     final daysOverdue = task['daysOverdue'] as int;
     final isOverdue = daysOverdue > 0;
+    final isDueSoon = daysOverdue <= 0 && daysOverdue >= -15; // Due within 15 days
+    
+    // Calculate due date
+    final dueDate = DateTime.now().add(Duration(days: -daysOverdue));
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
-        color: isOverdue ? Colors.red[50] : Colors.orange[50],
+        color: isOverdue ? Colors.red[50] : (isDueSoon ? Colors.orange[50] : Colors.blue[50]),
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: () {
+            // Navigate to maintenance completion form for due tasks
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -316,9 +390,9 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
               children: [
                 Container(
                   width: 4,
-                  height: 40,
+                  height: 50,
                   decoration: BoxDecoration(
-                    color: isOverdue ? Colors.red : Colors.orange,
+                    color: isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -339,36 +413,79 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                       Text(
                         item.description,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: Colors.grey[600],
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            isOverdue ? Icons.warning : Icons.schedule,
+                            size: 14,
+                            color: isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isOverdue 
+                                ? 'Overdue by ${daysOverdue} days'
+                                : 'Due in ${-daysOverdue} days',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 4),
-                      Text(
-                        isOverdue 
-                            ? 'Overdue by $daysOverdue days'
-                            : 'Due in $daysOverdue days',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isOverdue ? Colors.red : Colors.orange,
-                          fontWeight: FontWeight.w500,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: (isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue)).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Text(
+                          _formatDate(dueDate),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: isOverdue ? Colors.red : Colors.orange,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isOverdue ? Colors.red : (isDueSoon ? Colors.orange : Colors.blue),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.build,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Complete\nMaintenance',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -396,6 +513,33 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const Spacer(),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AllMaintenanceLogsScreen(vehicle: widget.vehicle),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green),
+                    ),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -408,13 +552,31 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                 }
                 
                 final logs = snapshot.data ?? [];
-                final recentLogs = logs.take(3).toList();
+                final recentLogs = logs.take(5).toList();
                 
                 if (recentLogs.isEmpty) {
                   return Center(
-                    child: Text(
-                      'No maintenance history found',
-                      style: TextStyle(color: Colors.grey[600]),
+                    child: Column(
+                      children: [
+                        Icon(Icons.history, size: 48, color: Colors.grey[400]),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No maintenance history found',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Maintenance records will appear here',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -433,52 +595,158 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
   Widget _buildMaintenanceLogItem(MaintenanceLog log) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
+      child: Material(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
+        child: InkWell(
+          onTap: () {
+            // Navigate to maintenance detail screen for this specific maintenance type
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MaintenanceDetailScreen(
+                  maintenanceType: log.itemName,
+                  vehicleId: widget.vehicle.id,
+                ),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[200]!),
             ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.green,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  log.itemName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                    size: 20,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_formatDate(log.date)} • ${log.performedBy ?? 'Unknown'}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                const SizedBox(width: 12),
+                
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        log.itemName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatDate(log.date),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(Icons.person, size: 12, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              log.performedBy ?? 'Unknown',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.speed, size: 10, color: Colors.blue),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${log.km.toStringAsFixed(0)} km',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.schedule, size: 10, color: Colors.orange),
+                                const SizedBox(width: 2),
+                                Text(
+                                  '${log.hours.toStringAsFixed(1)}h',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
+                ),
+                
+                Column(
+                  children: [
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Details',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -505,6 +773,7 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
             ),
             const SizedBox(height: 16),
             
+            // First row of buttons
             Row(
               children: [
                 Expanded(
@@ -525,6 +794,33 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
                   ),
                 ),
               ],
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Second row - Add custom maintenance note button
+            SizedBox(
+              width: double.infinity,
+              child: _buildActionButton(
+                'Add Custom Maintenance Note',
+                Icons.note_add,
+                Colors.green,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddCustomMaintenanceScreen(
+                        vehicle: widget.vehicle,
+                        userId: widget.userId,
+                      ),
+                    ),
+                  ).then((result) {
+                    if (result == true) {
+                      setState(() {}); // Refresh the screen to show new data
+                    }
+                  });
+                },
+              ),
             ),
           ],
         ),
@@ -550,18 +846,29 @@ class _UserVehicleDetailsScreenState extends State<UserVehicleDetailsScreen> {
     final List<Map<String, dynamic>> dueTasks = [];
     
     for (final item in scheduleItems) {
-      // For demo purposes, let's simulate some tasks being due
+      // Simulate realistic maintenance due dates based on item type
       int daysOverdue = 0;
       bool isDue = false;
       
-      if (item.name.contains('Oil')) {
+      if (item.name.toLowerCase().contains('engine oil') || item.name.toLowerCase().contains('oil change')) {
         daysOverdue = -12; // Due in 12 days
         isDue = true;
-      } else if (item.name.contains('Filter') && widget.vehicle.status == VehicleStatus.maintenance) {
-        daysOverdue = 3; // 3 days overdue
+      } else if (item.name.toLowerCase().contains('air filter') || item.name.toLowerCase().contains('filter')) {
+        daysOverdue = -25; // Due in 25 days  
         isDue = true;
-      } else if (item.name.contains('Brake')) {
-        daysOverdue = -5; // Due in 5 days
+      } else if (item.name.toLowerCase().contains('brake')) {
+        daysOverdue = -8; // Due in 8 days
+        isDue = true;
+      } else if (item.name.toLowerCase().contains('tire') || item.name.toLowerCase().contains('wheel')) {
+        if (widget.vehicle.status == VehicleStatus.maintenance) {
+          daysOverdue = 3; // 3 days overdue
+          isDue = true;
+        }
+      } else if (item.name.toLowerCase().contains('compressor')) {
+        daysOverdue = -13; // Due in 13 days (within your specified range)
+        isDue = true;
+      } else if (item.name.toLowerCase().contains('hydraulic')) {
+        daysOverdue = -15; // Due in 15 days
         isDue = true;
       }
       
