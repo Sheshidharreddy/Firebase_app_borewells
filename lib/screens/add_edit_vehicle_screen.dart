@@ -580,6 +580,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
           licensePlate: _licensePlateController.text.trim(),
           type: _selectedType,
           status: _selectedStatus,
+          organizationId: 'org_default', // Default organization for new vehicles
           model: _modelController.text.isNotEmpty ? _modelController.text.trim() : null,
           year: _yearController.text.isNotEmpty ? _yearController.text.trim() : null,
           color: _colorController.text.isNotEmpty ? _colorController.text.trim() : null,

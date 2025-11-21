@@ -35,6 +35,7 @@ class TestAuthService {
         email: email,
         role: user['role']!,
         name: user['name'],
+        organizationId: user['organization'] ?? 'org_default',
         createdAt: DateTime.now(),
       );
     }

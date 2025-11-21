@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/vehicle_model.dart';
+import '../models/user_model.dart';
 import 'firestore_service.dart';
+import 'organization_service.dart';
 
 class VehicleService {
   final FirestoreService _firestoreService = FirestoreService();
@@ -161,6 +163,72 @@ class VehicleService {
       }).toList();
     } catch (e) {
       throw Exception('Failed to search vehicles: $e');
+    }
+  }
+
+  // Get vehicles filtered by user's organization and role
+  Future<List<VehicleModel>> getVehiclesForUser(UserModel user) async {
+    try {
+      final allVehicles = await getAllVehicles();
+      return OrganizationService.filterVehiclesByUserAccess(allVehicles, user);
+    } catch (e) {
+      throw Exception('Failed to get vehicles for user: $e');
+    }
+  }
+
+  // Get vehicles by organization (for admin users)
+  Future<List<VehicleModel>> getVehiclesByOrganization(String organizationId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection(_collection)
+          .where('organizationId', isEqualTo: organizationId)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        return VehicleModel.fromMap(doc.data(), doc.id);
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to get vehicles by organization: $e');
+    }
+  }
+
+  // Get vehicles assigned to a specific driver
+  Future<List<VehicleModel>> getVehiclesByDriver(String driverId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection(_collection)
+          .where('driverId', isEqualTo: driverId)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        return VehicleModel.fromMap(doc.data(), doc.id);
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to get vehicles by driver: $e');
+    }
+  }
+
+  // Stream vehicles filtered by user access
+  Stream<List<VehicleModel>> getVehiclesStreamForUser(UserModel user) {
+    if (user.isAdmin) {
+      // Admin sees all vehicles in their organization
+      return FirebaseFirestore.instance
+          .collection(_collection)
+          .where('organizationId', isEqualTo: user.organizationId)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((doc) {
+                return VehicleModel.fromMap(doc.data(), doc.id);
+              }).toList());
+    } else {
+      // Regular user sees only their assigned vehicles
+      return FirebaseFirestore.instance
+          .collection(_collection)
+          .where('organizationId', isEqualTo: user.organizationId)
+          .where('driverId', isEqualTo: user.id)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((doc) {
+                return VehicleModel.fromMap(doc.data(), doc.id);
+              }).toList());
     }
   }
 }

@@ -252,6 +252,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Organization Demo Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/org-demo');
+                              },
+                              icon: const Icon(Icons.security),
+                              label: const Text('Organization Access Demo'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.purple,
+                                side: const BorderSide(color: Colors.purple),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

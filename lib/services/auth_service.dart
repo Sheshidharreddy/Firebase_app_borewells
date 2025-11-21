@@ -74,6 +74,7 @@ class AuthService {
             id: credential.user!.uid,
             email: credential.user!.email!,
             role: 'user', // default role
+            organizationId: 'org_default',
             createdAt: DateTime.now(),
             lastLogin: DateTime.now(),
           );
@@ -118,6 +119,7 @@ class AuthService {
           email: email,
           role: role,
           name: name,
+          organizationId: 'org_default',
           createdAt: DateTime.now(),
           lastLogin: DateTime.now(),
         );

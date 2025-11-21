@@ -7,6 +7,7 @@ import 'screens/login_screen.dart';
 import 'screens/admin_home_screen.dart';
 import 'screens/user_home_screen.dart';
 import 'screens/user_dashboard_screen.dart';
+import 'screens/user_selection_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +76,7 @@ class MyApp extends StatelessWidget {
         '/admin': (context) => const AdminHomeScreen(),
         '/user': (context) => const UserDashboardScreen(userId: 'user123', userName: 'John Doe'),
         '/user-old': (context) => const UserHomeScreen(),
+        '/org-demo': (context) => const UserSelectionScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String role;
   final String? name;
+  final String organizationId; // Organization/Company ID
   final DateTime createdAt;
   final DateTime? lastLogin;
 
@@ -11,6 +12,7 @@ class UserModel {
     required this.email,
     required this.role,
     this.name,
+    required this.organizationId,
     required this.createdAt,
     this.lastLogin,
   });
@@ -22,6 +24,7 @@ class UserModel {
       email: map['email'] ?? '',
       role: map['role'] ?? 'driver', // default to driver role
       name: map['name'],
+      organizationId: map['organizationId'] ?? 'org_default',
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         map['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
       ),
@@ -37,6 +40,7 @@ class UserModel {
       'email': email,
       'role': role,
       'name': name,
+      'organizationId': organizationId,
       'createdAt': createdAt,
       'lastLogin': lastLogin,
     };
@@ -48,6 +52,7 @@ class UserModel {
     String? email,
     String? role,
     String? name,
+    String? organizationId,
     DateTime? createdAt,
     DateTime? lastLogin,
   }) {
@@ -56,6 +61,7 @@ class UserModel {
       email: email ?? this.email,
       role: role ?? this.role,
       name: name ?? this.name,
+      organizationId: organizationId ?? this.organizationId,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
     );
