@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/user_model.dart';
 import '../models/vehicle_model.dart';
 import '../services/vehicle_service.dart';
 import '../services/test_vehicle_service.dart';
 import '../services/role_service.dart';
+import '../services/session_service.dart';
 import '../widgets/permission_widget.dart';
 
 class AddEditVehicleScreen extends StatefulWidget {
@@ -20,6 +22,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
   final VehicleService _vehicleService = VehicleService();
   final TestVehicleService _testVehicleService = TestVehicleService();
   final RoleService _roleService = RoleService();
+  final SessionService _sessionService = SessionService.instance;
   final _formKey = GlobalKey<FormState>();
   
   // Form controllers
@@ -574,13 +577,18 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
           throw Exception('You do not have permission to add vehicles');
         }
         
+        final sessionUser = await _sessionService.requireCurrentUser();
+        final String adminId = sessionUser.isAdmin ? sessionUser.id : sessionUser.adminId;
+        final String organizationId = sessionUser.organizationId;
+
         final newVehicle = VehicleModel(
           id: '', // Will be set by the service
           name: _nameController.text.trim(),
           licensePlate: _licensePlateController.text.trim(),
           type: _selectedType,
           status: _selectedStatus,
-          organizationId: 'org_default', // Default organization for new vehicles
+          adminId: adminId,
+          organizationId: organizationId,
           model: _modelController.text.isNotEmpty ? _modelController.text.trim() : null,
           year: _yearController.text.isNotEmpty ? _yearController.text.trim() : null,
           color: _colorController.text.isNotEmpty ? _colorController.text.trim() : null,

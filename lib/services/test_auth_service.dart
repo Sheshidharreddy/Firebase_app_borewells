@@ -6,17 +6,22 @@ class TestAuthService {
     'admin@servicemaster.com': {
       'password': '123456',
       'role': 'admin',
-      'name': 'Admin User'
+      'name': 'Admin User',
+      'organization': 'org_test',
     },
     'driver@servicemaster.com': {
       'password': '123456', 
       'role': 'user',
-      'name': 'Driver User'
+      'name': 'Driver User',
+      'organization': 'org_test',
+      'adminId': 'test_admin',
     },
     'mechanic@servicemaster.com': {
       'password': '123456',
       'role': 'user',
-      'name': 'Mechanic User'
+      'name': 'Mechanic User',
+      'organization': 'org_test',
+      'adminId': 'test_admin',
     },
   };
 
@@ -35,6 +40,8 @@ class TestAuthService {
         email: email,
         role: user['role']!,
         name: user['name'],
+        adminId: user['adminId'] ??
+            (user['role'] == 'admin' ? 'test_admin' : 'test_admin_parent'),
         organizationId: user['organization'] ?? 'org_default',
         createdAt: DateTime.now(),
       );

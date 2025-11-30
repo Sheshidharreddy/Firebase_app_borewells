@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "YOUR_PROJECT_NUMBER",
-    "project_id": "borewells-svb",
-    "storage_bucket": "borewells-svb.firebasestorage.app"
+    "project_number": "278194023228",
+    "project_id": "smart-service-borewll",
+    "storage_bucket": "smart-service-borewll.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "YOUR_ANDROID_APP_ID",
+        "mobilesdk_app_id": "1:278194023228:android:b80960c0d3ab03b3dd4c39",
         "android_client_info": {
           "package_name": "com.example.servicemaster"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "YOUR_OAUTH_CLIENT_ID",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "YOUR_API_KEY"
+          "current_key": "AIzaSyDGR5jvc3iQwBbqZMtmdb2AkuHjRlKqDV8"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "YOUR_OAUTH_CLIENT_ID",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

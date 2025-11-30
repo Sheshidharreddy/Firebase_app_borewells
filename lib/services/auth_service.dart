@@ -1,14 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 import 'firestore_service.dart';
-import 'test_auth_service.dart';
+import 'session_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirestoreService _firestoreService = FirestoreService();
   
   // Test mode flag
-  static const bool _useTestMode = true;
+  static const bool _useTestMode = false;
 
   // Get current user
   User? get currentUser {
@@ -34,15 +34,6 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    if (_useTestMode) {
-      // Use test authentication
-      final testAuth = TestAuthService();
-      return await testAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    }
-    
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -74,6 +65,7 @@ class AuthService {
             id: credential.user!.uid,
             email: credential.user!.email!,
             role: 'user', // default role
+            adminId: 'admin_default',
             organizationId: 'org_default',
             createdAt: DateTime.now(),
             lastLogin: DateTime.now(),
@@ -101,11 +93,6 @@ class AuthService {
     required String role,
     String? name,
   }) async {
-    if (_useTestMode) {
-      // Test mode doesn't support sign up
-      throw Exception('Sign up not available in test mode');
-    }
-    
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
@@ -119,6 +106,7 @@ class AuthService {
           email: email,
           role: role,
           name: name,
+          adminId: role == 'admin' ? credential.user!.uid : 'admin_default',
           organizationId: 'org_default',
           createdAt: DateTime.now(),
           lastLogin: DateTime.now(),
@@ -140,11 +128,6 @@ class AuthService {
 
   // Get current user data from Firestore
   Future<UserModel?> getCurrentUserData() async {
-    if (_useTestMode) {
-      // In test mode, this is handled by RoleService
-      return null;
-    }
-    
     final user = currentUser;
     if (user != null) {
       try {
@@ -168,14 +151,9 @@ class AuthService {
 
   // Sign out
   Future<void> signOut() async {
-    if (_useTestMode) {
-      // In test mode, just clear the current test user in RoleService
-      // This will be handled by the calling code
-      return;
-    }
-    
     try {
       await _auth.signOut();
+      SessionService.instance.setCurrentUser(null);
     } catch (e) {
       throw Exception('Sign out failed: $e');
     }
@@ -183,11 +161,6 @@ class AuthService {
 
   // Reset password
   Future<void> resetPassword({required String email}) async {
-    if (_useTestMode) {
-      // In test mode, just simulate password reset
-      return;
-    }
-    
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {

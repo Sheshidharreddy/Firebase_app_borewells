@@ -41,48 +41,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'borewells-svb',
-    authDomain: 'borewells-svb.firebaseapp.com',
-    storageBucket: 'borewells-svb.firebasestorage.app',
-    measurementId: 'YOUR_MEASUREMENT_ID',
+    apiKey: 'AIzaSyDGR5jvc3iQwBbqZMtmdb2AkuHjRlKqDV8',
+    appId: '1:278194023228:web:PLACEHOLDER',
+    messagingSenderId: '278194023228',
+    projectId: 'smart-service-borewll',
+    authDomain: 'smart-service-borewll.firebaseapp.com',
+    storageBucket: 'smart-service-borewll.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'borewells-svb',
-    storageBucket: 'borewells-svb.firebasestorage.app',
+    apiKey: 'AIzaSyDGR5jvc3iQwBbqZMtmdb2AkuHjRlKqDV8',
+    appId: '1:278194023228:android:b80960c0d3ab03b3dd4c39',
+    messagingSenderId: '278194023228',
+    projectId: 'smart-service-borewll',
+    storageBucket: 'smart-service-borewll.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'borewells-svb',
-    storageBucket: 'borewells-svb.firebasestorage.app',
+    apiKey: 'AIzaSyApZrUJORci8mD5yxp4UE_K3EqWDZXY_s8',
+    appId: '1:278194023228:ios:15a745b2f4d88e90dd4c39',
+    messagingSenderId: '278194023228',
+    projectId: 'smart-service-borewll',
+    storageBucket: 'smart-service-borewll.firebasestorage.app',
     iosBundleId: 'com.example.servicemaster',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'YOUR_MACOS_API_KEY',
-    appId: 'YOUR_MACOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'borewells-svb',
-    storageBucket: 'borewells-svb.firebasestorage.app',
+    apiKey: 'AIzaSyApZrUJORci8mD5yxp4UE_K3EqWDZXY_s8',
+    appId: '1:278194023228:ios:15a745b2f4d88e90dd4c39',
+    messagingSenderId: '278194023228',
+    projectId: 'smart-service-borewll',
+    storageBucket: 'smart-service-borewll.firebasestorage.app',
     iosBundleId: 'com.example.servicemaster',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'YOUR_WINDOWS_API_KEY',
-    appId: 'YOUR_WINDOWS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'borewells-svb',
-    authDomain: 'borewells-svb.firebaseapp.com',
-    storageBucket: 'borewells-svb.firebasestorage.app',
-    measurementId: 'YOUR_MEASUREMENT_ID',
+    apiKey: 'AIzaSyDGR5jvc3iQwBbqZMtmdb2AkuHjRlKqDV8',
+    appId: '1:278194023228:web:PLACEHOLDER',
+    messagingSenderId: '278194023228',
+    projectId: 'smart-service-borewll',
+    authDomain: 'smart-service-borewll.firebaseapp.com',
+    storageBucket: 'smart-service-borewll.firebasestorage.app',
   );
 }

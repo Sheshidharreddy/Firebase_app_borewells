@@ -18,6 +18,7 @@ class VehicleModel {
   final String licensePlate;
   final VehicleType type;
   final VehicleStatus status;
+  final String adminId;
   final String organizationId; // Organization/Company ID
   final String? driverId;
   final String? driverName;
@@ -37,6 +38,7 @@ class VehicleModel {
     required this.licensePlate,
     required this.type,
     required this.status,
+    required this.adminId,
     required this.organizationId,
     this.driverId,
     this.driverName,
@@ -65,6 +67,7 @@ class VehicleModel {
         (e) => e.name == map['status'],
         orElse: () => VehicleStatus.available,
       ),
+      adminId: map['adminId'] ?? map['organizationId'] ?? 'admin_default',
       organizationId: map['organizationId'] ?? 'org_default',
       driverId: map['driverId'],
       driverName: map['driverName'],
@@ -91,6 +94,7 @@ class VehicleModel {
       'licensePlate': licensePlate,
       'type': type.name,
       'status': status.name,
+      'adminId': adminId,
       'organizationId': organizationId,
       'driverId': driverId,
       'driverName': driverName,
@@ -113,6 +117,7 @@ class VehicleModel {
     String? licensePlate,
     VehicleType? type,
     VehicleStatus? status,
+    String? adminId,
     String? organizationId,
     String? driverId,
     String? driverName,
@@ -132,6 +137,7 @@ class VehicleModel {
       licensePlate: licensePlate ?? this.licensePlate,
       type: type ?? this.type,
       status: status ?? this.status,
+      adminId: adminId ?? this.adminId,
       organizationId: organizationId ?? this.organizationId,
       driverId: driverId ?? this.driverId,
       driverName: driverName ?? this.driverName,

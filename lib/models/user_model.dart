@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String role;
   final String? name;
+  final String adminId;
   final String organizationId; // Organization/Company ID
   final DateTime createdAt;
   final DateTime? lastLogin;
@@ -12,6 +13,7 @@ class UserModel {
     required this.email,
     required this.role,
     this.name,
+    required this.adminId,
     required this.organizationId,
     required this.createdAt,
     this.lastLogin,
@@ -22,8 +24,9 @@ class UserModel {
     return UserModel(
       id: id,
       email: map['email'] ?? '',
-      role: map['role'] ?? 'driver', // default to driver role
+      role: map['role'] ?? 'user', // default to user role
       name: map['name'],
+      adminId: map['adminId'] ?? 'admin_default',
       organizationId: map['organizationId'] ?? 'org_default',
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         map['createdAt']?.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
@@ -40,6 +43,7 @@ class UserModel {
       'email': email,
       'role': role,
       'name': name,
+      'adminId': adminId,
       'organizationId': organizationId,
       'createdAt': createdAt,
       'lastLogin': lastLogin,
@@ -52,6 +56,7 @@ class UserModel {
     String? email,
     String? role,
     String? name,
+    String? adminId,
     String? organizationId,
     DateTime? createdAt,
     DateTime? lastLogin,
@@ -61,6 +66,7 @@ class UserModel {
       email: email ?? this.email,
       role: role ?? this.role,
       name: name ?? this.name,
+      adminId: adminId ?? this.adminId,
       organizationId: organizationId ?? this.organizationId,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
@@ -68,8 +74,16 @@ class UserModel {
   }
 
   // Check if user is admin
-  bool get isAdmin => role.toLowerCase() == 'admin';
+  bool get isAdmin {
+    final normalized = role.toLowerCase();
+    return normalized == 'admin' || normalized == 'super_admin';
+  }
+
+  bool get isSuperAdmin => role.toLowerCase() == 'super_admin';
 
   // Check if user is driver
-  bool get isDriver => role.toLowerCase() == 'driver';
+  bool get isDriver {
+    final normalized = role.toLowerCase();
+    return normalized == 'driver' || normalized == 'user';
+  }
 }

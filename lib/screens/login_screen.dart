@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-import '../services/test_auth_service.dart';
-import '../services/role_service.dart';
 import '../models/user_model.dart';
+import '../screens/super_admin_dashboard_screen.dart';
+import '../services/session_service.dart';
+import '../services/user_management_service.dart';
+import 'admin_home_screen.dart';
+import 'user_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,13 +16,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
-  final TestAuthService _testAuthService = TestAuthService();
+  final UserManagementService _userManagementService = UserManagementService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  final bool _useTestMode = true; // Enable test mode for now
 
   @override
   void dispose() {
@@ -63,83 +65,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
-
-                // Quick Test Login Section (only in test mode)
-                if (_useTestMode) ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.science, color: Colors.blue, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Quick Test Login',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'For testing purposes, click below to login as:',
-                          style: TextStyle(color: Colors.blue[700], fontSize: 12),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _quickLogin('admin@servicemaster.com'),
-                                icon: Icon(Icons.admin_panel_settings, size: 16),
-                                label: const Text('Admin User'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red[100],
-                                  foregroundColor: Colors.red[800],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => _quickLogin('driver@servicemaster.com'),
-                                icon: Icon(Icons.person, size: 16),
-                                label: const Text('Driver/User'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[100],
-                                  foregroundColor: Colors.green[800],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Text(
-                      'OR LOGIN MANUALLY',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-
                 const SizedBox(height: 24),
 
                 // Login Form
@@ -274,6 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
+                          
+                          TextButton(
+                            onPressed: _showSuperAdminDialog,
+                            child: const Text(
+                              'Create Super Admin Record',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -281,56 +214,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Demo Accounts Info
-                Card(
-                  color: _useTestMode ? Colors.green[50] : Colors.blue[50],
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _useTestMode ? Icons.check_circle : Icons.info,
-                              color: _useTestMode ? Colors.green : Colors.blue,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _useTestMode ? 'Test Mode Active' : 'Demo Accounts',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: _useTestMode ? Colors.green[800] : Colors.blue[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Admin: admin@servicemaster.com\nDriver: driver@servicemaster.com\nPassword: 123456',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: _useTestMode ? Colors.green[700] : Colors.blue[700],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (_useTestMode) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            '(No Firebase needed - works offline)',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.green[600],
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -347,21 +230,10 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      UserModel? user;
-      
-      if (_useTestMode) {
-        // Use test authentication for demonstration
-        user = await _testAuthService.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
-      } else {
-        // Use Firebase authentication (when configured)
-        user = await _authService.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
-      }
+      final user = await _authService.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
       if (user != null && mounted) {
         _navigateBasedOnRole(user);
@@ -384,28 +256,170 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _navigateBasedOnRole(UserModel user) {
-    // Navigate directly to the appropriate screen based on user role
-    String targetRoute;
-    if (user.role == 'admin') {
-      targetRoute = '/admin';
-    } else {
-      targetRoute = '/user';
+  Future<void> _showSuperAdminDialog() async {
+    final rootContext = context;
+
+    try {
+      final exists = await _userManagementService.superAdminExists();
+      if (exists) {
+        if (mounted) {
+          ScaffoldMessenger.of(rootContext).showSnackBar(
+            const SnackBar(
+              content: Text('Super admin already exists'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(rootContext).showSnackBar(
+          SnackBar(
+            content: Text('Failed to check super admin: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
     }
-    
-    // Navigate to the appropriate screen and clear the navigation stack
-    Navigator.of(context).pushNamedAndRemoveUntil(targetRoute, (route) => false);
+
+    final uidController = TextEditingController();
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    bool isSaving = false;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Create Super Admin'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Enter the Firebase UID, name, and email for the super admin user '
+                    'you created in the Firebase Console.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: uidController,
+                    decoration: const InputDecoration(
+                      labelText: 'Firebase UID',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSaving ? null : () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          if (uidController.text.isEmpty ||
+                              nameController.text.isEmpty ||
+                              emailController.text.isEmpty) {
+                            ScaffoldMessenger.of(rootContext).showSnackBar(
+                              const SnackBar(
+                                content: Text('All fields are required'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          setState(() => isSaving = true);
+                          try {
+                            await _userManagementService.createSuperAdmin(
+                              uid: uidController.text.trim(),
+                              email: emailController.text.trim(),
+                              name: nameController.text.trim(),
+                            );
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(rootContext).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Super admin record created. You can now sign in.',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(rootContext).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to create record: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (context.mounted) {
+                              setState(() => isSaving = false);
+                            }
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Create'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    uidController.dispose();
+    nameController.dispose();
+    emailController.dispose();
   }
 
-  Future<void> _quickLogin(String email) async {
-    // Set the form fields and trigger regular login
-    _emailController.text = email;
-    _passwordController.text = '123456'; // Default test password
-    
-    // Switch test user in RoleService for proper role determination
-    RoleService().switchTestUser(email);
-    
-    // Trigger the regular login flow
-    _signIn();
+  void _navigateBasedOnRole(UserModel user) {
+    SessionService.instance.setCurrentUser(user);
+    Widget targetScreen;
+    if (user.role == 'super_admin') {
+      targetScreen = SuperAdminDashboardScreen(currentUser: user);
+    } else if (user.role == 'admin') {
+      targetScreen = const AdminHomeScreen();
+    } else {
+      targetScreen = UserDashboardScreen(
+        userId: user.id,
+        userName: user.name ?? user.email,
+      );
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => targetScreen),
+      (route) => false,
+    );
   }
 }

@@ -19,18 +19,15 @@ class OrganizationService {
     List<VehicleModel> vehicles,
     UserModel currentUser,
   ) {
-    if (currentUser.isAdmin) {
-      // Admin can see all vehicles in their organization
-      return vehicles.where((vehicle) => 
-        vehicle.organizationId == currentUser.organizationId
-      ).toList();
-    } else {
-      // Regular users can only see vehicles assigned to them
-      return vehicles.where((vehicle) => 
-        vehicle.organizationId == currentUser.organizationId &&
-        vehicle.driverId == currentUser.id
-      ).toList();
+    if (currentUser.isSuperAdmin) {
+      return vehicles;
     }
+
+    if (currentUser.isAdmin) {
+      return vehicles.where((vehicle) => vehicle.adminId == currentUser.id).toList();
+    }
+
+    return vehicles.where((vehicle) => vehicle.adminId == currentUser.adminId).toList();
   }
 
   // Filter users based on admin's organization
@@ -85,6 +82,7 @@ class OrganizationService {
         email: 'admin.a1@orga.com',
         role: 'admin',
         name: 'Admin A1',
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         createdAt: now.subtract(const Duration(days: 100)),
       ),
@@ -93,6 +91,7 @@ class OrganizationService {
         email: 'driver.a1@orga.com',
         role: 'driver',
         name: 'Driver A1',
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         createdAt: now.subtract(const Duration(days: 80)),
       ),
@@ -101,6 +100,7 @@ class OrganizationService {
         email: 'driver.a2@orga.com',
         role: 'driver',
         name: 'Driver A2',
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         createdAt: now.subtract(const Duration(days: 70)),
       ),
@@ -109,6 +109,7 @@ class OrganizationService {
         email: 'driver.a3@orga.com',
         role: 'driver',
         name: 'Driver A3',
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         createdAt: now.subtract(const Duration(days: 60)),
       ),
@@ -119,6 +120,7 @@ class OrganizationService {
         email: 'admin.b1@orgb.com',
         role: 'admin',
         name: 'Admin B1',
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         createdAt: now.subtract(const Duration(days: 90)),
       ),
@@ -127,6 +129,7 @@ class OrganizationService {
         email: 'driver.b1@orgb.com',
         role: 'driver',
         name: 'Driver B1',
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         createdAt: now.subtract(const Duration(days: 50)),
       ),
@@ -135,6 +138,7 @@ class OrganizationService {
         email: 'driver.b2@orgb.com',
         role: 'driver',
         name: 'Driver B2',
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         createdAt: now.subtract(const Duration(days: 40)),
       ),
@@ -143,6 +147,7 @@ class OrganizationService {
         email: 'driver.b3@orgb.com',
         role: 'driver',
         name: 'Driver B3',
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         createdAt: now.subtract(const Duration(days: 30)),
       ),
@@ -161,6 +166,7 @@ class OrganizationService {
         licensePlate: 'AA-001-BB',
         type: VehicleType.truck,
         status: VehicleStatus.available,
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         driverId: 'user_a1',
         driverName: 'Driver A1',
@@ -179,6 +185,7 @@ class OrganizationService {
         licensePlate: 'AA-002-CC',
         type: VehicleType.van,
         status: VehicleStatus.inUse,
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         driverId: 'user_a2',
         driverName: 'Driver A2',
@@ -197,6 +204,7 @@ class OrganizationService {
         licensePlate: 'AA-003-DD',
         type: VehicleType.car,
         status: VehicleStatus.available,
+        adminId: 'admin_a1',
         organizationId: 'org_a',
         driverId: 'user_a3',
         driverName: 'Driver A3',
@@ -217,6 +225,7 @@ class OrganizationService {
         licensePlate: 'BB-001-AA',
         type: VehicleType.truck,
         status: VehicleStatus.maintenance,
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         driverId: 'user_b1',
         driverName: 'Driver B1',
@@ -235,6 +244,7 @@ class OrganizationService {
         licensePlate: 'BB-002-CC',
         type: VehicleType.van,
         status: VehicleStatus.available,
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         driverId: 'user_b2',
         driverName: 'Driver B2',
@@ -253,6 +263,7 @@ class OrganizationService {
         licensePlate: 'BB-003-MM',
         type: VehicleType.motorcycle,
         status: VehicleStatus.inUse,
+        adminId: 'admin_b1',
         organizationId: 'org_b',
         driverId: 'user_b3',
         driverName: 'Driver B3',

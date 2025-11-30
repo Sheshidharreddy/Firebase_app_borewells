@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'create_user_screen.dart';
 import 'vehicle_list_screen.dart';
 import 'maintenance_log_list_screen.dart';
 import 'add_edit_vehicle_screen.dart';
@@ -79,6 +80,23 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const AddEditVehicleScreen(),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 20),
+
+            _buildLargeButton(
+              context,
+              'Create Driver/User',
+              Icons.person_add,
+              Colors.purple,
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreateUserScreen(),
                   ),
                 );
               },

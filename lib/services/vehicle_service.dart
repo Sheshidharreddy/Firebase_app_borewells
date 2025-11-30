@@ -210,25 +210,30 @@ class VehicleService {
 
   // Stream vehicles filtered by user access
   Stream<List<VehicleModel>> getVehiclesStreamForUser(UserModel user) {
-    if (user.isAdmin) {
-      // Admin sees all vehicles in their organization
-      return FirebaseFirestore.instance
-          .collection(_collection)
-          .where('organizationId', isEqualTo: user.organizationId)
-          .snapshots()
-          .map((snapshot) => snapshot.docs.map((doc) {
-                return VehicleModel.fromMap(doc.data(), doc.id);
-              }).toList());
-    } else {
-      // Regular user sees only their assigned vehicles
-      return FirebaseFirestore.instance
-          .collection(_collection)
-          .where('organizationId', isEqualTo: user.organizationId)
-          .where('driverId', isEqualTo: user.id)
-          .snapshots()
-          .map((snapshot) => snapshot.docs.map((doc) {
-                return VehicleModel.fromMap(doc.data(), doc.id);
-              }).toList());
+    final collection = FirebaseFirestore.instance.collection(_collection);
+
+    if (user.isSuperAdmin) {
+      return collection.snapshots().map(
+            (snapshot) => snapshot.docs
+                .map((doc) => VehicleModel.fromMap(doc.data(), doc.id))
+                .toList(),
+          );
     }
+
+    if (user.isAdmin) {
+      return collection
+          .where('adminId', isEqualTo: user.id)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => VehicleModel.fromMap(doc.data(), doc.id))
+              .toList());
+    }
+
+    return collection
+        .where('adminId', isEqualTo: user.adminId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => VehicleModel.fromMap(doc.data(), doc.id))
+            .toList());
   }
 }
