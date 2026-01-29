@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/vehicle_model.dart';
 import '../models/user_model.dart';
 import 'firestore_service.dart';
@@ -7,6 +8,37 @@ import 'organization_service.dart';
 class VehicleService {
   final FirestoreService _firestoreService = FirestoreService();
   final String _collection = 'vehicles';
+
+  bool _canUpdateVehicle({
+  required UserModel user,
+  required VehicleModel vehicle,
+}) {
+  if (user.role == 'super_admin') return true;
+
+  if (user.role == 'admin' && vehicle.adminId == user.id) {
+    return true;
+  }
+
+  if (user.role == 'user' && vehicle.ownerId == user.id) {
+    return true;
+  }
+
+  return false;
+}
+
+bool _canDeleteVehicle({
+  required UserModel user,
+  required VehicleModel vehicle,
+}) {
+  if (user.role == 'super_admin') return true;
+
+  if (user.role == 'admin' && vehicle.adminId == user.id) {
+    return true;
+  }
+
+  // Users can never delete
+  return false;
+}
 
   // Get all vehicles
   Future<List<VehicleModel>> getAllVehicles() async {
@@ -46,52 +78,81 @@ class VehicleService {
   }
 
   // Add new vehicle
-  Future<String> addVehicle(VehicleModel vehicle) async {
-    try {
-      final docRef = FirebaseFirestore.instance.collection(_collection).doc();
-      final newVehicle = vehicle.copyWith(
-        id: docRef.id,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      );
-      
-      await _firestoreService.setDocument(
-        collection: _collection,
-        documentId: docRef.id,
-        data: newVehicle.toMap(),
-      );
-      
-      return docRef.id;
-    } catch (e) {
-      throw Exception('Failed to add vehicle: $e');
-    }
-  }
+ Future<String> addVehicle(VehicleModel vehicle) async {
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+  final vehicleId = '${uid}_${DateTime.now().millisecondsSinceEpoch}';
+
+  final newVehicle = vehicle.copyWith(
+    id: vehicleId,
+    adminId: uid,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  );
+
+  await _firestoreService.setDocument(
+    collection: _collection,
+    documentId: vehicleId,
+    data: newVehicle.toMap(),
+  );
+
+  return vehicleId;
+}
 
   // Update vehicle
-  Future<void> updateVehicle(VehicleModel vehicle) async {
-    try {
-      final updatedVehicle = vehicle.copyWith(updatedAt: DateTime.now());
-      await _firestoreService.updateDocument(
-        collection: _collection,
-        documentId: vehicle.id,
-        data: updatedVehicle.toMap(),
-      );
-    } catch (e) {
-      throw Exception('Failed to update vehicle: $e');
-    }
-  }
+ Future<void> updateVehicle(VehicleModel vehicle) async {
+  try {
+    final currentUser = await _firestoreService.getCurrentUser(); // or userService
+    final existingVehicle = await getVehicleById(vehicle.id);
 
-  // Delete vehicle
-  Future<void> deleteVehicle(String id) async {
-    try {
-      await _firestoreService.deleteDocument(
-        collection: _collection,
-        documentId: id,
-      );
-    } catch (e) {
-      throw Exception('Failed to delete vehicle: $e');
+    if (existingVehicle == null) {
+      throw Exception('Vehicle not found');
     }
+
+    if (!_canUpdateVehicle(
+      user: currentUser,
+      vehicle: existingVehicle,
+    )) {
+      throw Exception('Unauthorized: cannot update this vehicle');
+    }
+
+    final updatedVehicle = vehicle.copyWith(updatedAt: DateTime.now());
+
+    await _firestoreService.updateDocument(
+      collection: _collection,
+      documentId: vehicle.id,
+      data: updatedVehicle.toMap(),
+    );
+  } catch (e) {
+    throw Exception('Failed to update vehicle: $e');
   }
+}
+
+
+  Future<void> deleteVehicle(String id) async {
+  try {
+    final currentUser = await _firestoreService.getCurrentUser();
+    final vehicle = await getVehicleById(id);
+
+    if (vehicle == null) {
+      throw Exception('Vehicle not found');
+    }
+
+    if (!_canDeleteVehicle(
+      user: currentUser,
+      vehicle: vehicle,
+    )) {
+      throw Exception('Unauthorized: cannot delete vehicle');
+    }
+
+    await _firestoreService.deleteDocument(
+      collection: _collection,
+      documentId: id,
+    );
+  } catch (e) {
+    throw Exception('Failed to delete vehicle: $e');
+  }
+}
+
 
   // Get vehicles by status
   Future<List<VehicleModel>> getVehiclesByStatus(VehicleStatus status) async {
@@ -116,6 +177,13 @@ class VehicleService {
 
   // Assign vehicle to driver
   Future<void> assignVehicleToDriver(String vehicleId, String driverId, String driverName) async {
+
+    final currentUser = await _firestoreService.getCurrentUser();
+
+      if (currentUser.role == 'user') {
+        throw Exception('Unauthorized: users cannot assign vehicles');
+      }
+
     try {
       await _firestoreService.updateDocument(
         collection: _collection,
@@ -134,6 +202,14 @@ class VehicleService {
 
   // Unassign vehicle from driver
   Future<void> unassignVehicleFromDriver(String vehicleId) async {
+
+
+    final currentUser = await _firestoreService.getCurrentUser();
+
+      if (currentUser.role == 'user') {
+        throw Exception('Unauthorized: users cannot assign vehicles');
+      } 
+      
     try {
       await _firestoreService.updateDocument(
         collection: _collection,

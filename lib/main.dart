@@ -39,15 +39,15 @@ void main() async {
       // Test Firestore connectivity
       try {
         await FirebaseFirestore.instance.enableNetwork();
-        // Try a simple connectivity test
-        await FirebaseFirestore.instance
-            .collection('_test')
-            .doc('_connection')
-            .get()
-            .timeout(const Duration(seconds: 5));
-        print("✅ Firestore connection test successful");
+        // // Try a simple connectivity test
+        // await FirebaseFirestore.instance
+        //     .collection('_test')
+        //     .doc('_connection')
+        //     .get()
+        //     .timeout(const Duration(seconds: 5));
+        print("✅ Firestore network enabled");
       } catch (e) {
-        print("⚠️ Firestore connection test failed: $e");
+        print("⚠️ Firestore network enable failed: $e");
         print("📝 Will use fallback test data");
       }
     }

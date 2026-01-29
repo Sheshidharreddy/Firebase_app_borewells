@@ -43,3 +43,24 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# system / build
+.DS_Store
+/build
+/.dart_tool
+/.packages
+.idea/
+.vscode/
+
+# Flutter / Xcode
+/.flutter-plugins
+/.flutter-plugins-dependencies
+ios/Pods/
+macos/Pods/
+
+# Node / functions build
+/functions/node_modules/
+/functions/functions/
+
+# Firebase secrets
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json

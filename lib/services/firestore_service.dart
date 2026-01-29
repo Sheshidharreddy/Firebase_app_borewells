@@ -21,6 +21,9 @@ class FirestoreService {
     required String collection,
     required String documentId,
   }) async {
+
+    print('FIRESTORE getDocument: $collection / $documentId');
+
     try {
       return await _db.collection(collection).doc(documentId).get();
     } catch (e) {
@@ -64,6 +67,9 @@ class FirestoreService {
     required String documentId,
     required Map<String, dynamic> data,
   }) async {
+
+     print('FIRESTORE updateDocument: $collection / $documentId');
+     
     try {
       await _db.collection(collection).doc(documentId).update(data);
     } catch (e) {

@@ -28,13 +28,14 @@ class UserManagementService {
   }
 
   Future<bool> superAdminExists() async {
-    final snapshot = await _firestore
-        .collection('users')
-        .where('role', isEqualTo: 'super_admin')
-        .limit(1)
-        .get();
-    return snapshot.docs.isNotEmpty;
-  }
+    final  doc = await FirebaseFirestore.instance
+      .collection('config')
+      .doc('system')
+      .get();
+      
+    return doc.exists && (doc.data()?['superAdminUid'] == true);
+
+    }
 
   Future<void> createSuperAdmin({
     required String uid,
