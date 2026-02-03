@@ -15,6 +15,8 @@ enum VehicleStatus {
 class VehicleModel {
   final String id;
   final String name;
+  final String ownerId;
+  final String createdByRole;
   final String licensePlate;
   final VehicleType type;
   final VehicleStatus status;
@@ -35,6 +37,8 @@ class VehicleModel {
   VehicleModel({
     required this.id,
     required this.name,
+    required this.ownerId,
+    required this.createdByRole,
     required this.licensePlate,
     required this.type,
     required this.status,
@@ -67,8 +71,10 @@ class VehicleModel {
         (e) => e.name == map['status'],
         orElse: () => VehicleStatus.available,
       ),
+      ownerId: map['ownerId'] ?? '',
       adminId: map['adminId'] ?? map['organizationId'] ?? 'admin_default',
       organizationId: map['organizationId'] ?? 'org_default',
+      createdByRole: map['createdByRole'] ?? 'user',
       driverId: map['driverId'],
       driverName: map['driverName'],
       model: map['model'],
@@ -94,8 +100,10 @@ class VehicleModel {
       'licensePlate': licensePlate,
       'type': type.name,
       'status': status.name,
+      'ownerId': ownerId,
       'adminId': adminId,
       'organizationId': organizationId,
+      'createdByRole': createdByRole,
       'driverId': driverId,
       'driverName': driverName,
       'model': model,
@@ -118,6 +126,8 @@ class VehicleModel {
     VehicleType? type,
     VehicleStatus? status,
     String? adminId,
+    String? ownerId,
+    String? createdByRole,
     String? organizationId,
     String? driverId,
     String? driverName,
@@ -138,7 +148,9 @@ class VehicleModel {
       type: type ?? this.type,
       status: status ?? this.status,
       adminId: adminId ?? this.adminId,
+      ownerId: ownerId ?? this.ownerId,
       organizationId: organizationId ?? this.organizationId,
+      createdByRole: createdByRole ?? this.createdByRole,
       driverId: driverId ?? this.driverId,
       driverName: driverName ?? this.driverName,
       model: model ?? this.model,

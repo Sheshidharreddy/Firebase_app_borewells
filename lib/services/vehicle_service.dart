@@ -79,12 +79,14 @@ bool _canDeleteVehicle({
 
   // Add new vehicle
  Future<String> addVehicle(VehicleModel vehicle) async {
-  final uid = FirebaseAuth.instance.currentUser!.uid;
+  final currentUser = await _firestoreService.getCurrentUser();
+  final uid = currentUser.id;
   final vehicleId = '${uid}_${DateTime.now().millisecondsSinceEpoch}';
 
   final newVehicle = vehicle.copyWith(
     id: vehicleId,
-    adminId: uid,
+    ownerId: uid,
+    adminId: currentUser.role == 'admin' ? uid : currentUser.adminId!,
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
   );

@@ -64,3 +64,32 @@ macos/Pods/
 # Firebase secrets
 ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
+
+# macOS / system
+.DS_Store
+
+# Flutter / build
+/build
+/.dart_tool
+/.packages
+.packages
+.dart_tool
+
+# IDE
+.idea/
+.vscode/
+
+# Xcode / CocoaPods
+ios/Pods/
+macos/Pods/
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# Node / functions
+/functions/node_modules/
+/functions/functions/
+/functions/package-lock.json
+
+# Others
+.git-credentials
+EOF

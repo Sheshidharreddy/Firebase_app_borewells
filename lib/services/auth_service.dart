@@ -39,6 +39,9 @@ class AuthService {
         email: email,
         password: password,
       );
+
+      print('SIGNED IN UID: ${credential.user?.uid}');
+      print('CURRENT USER UID: ${FirebaseAuth.instance.currentUser?.uid}');
       
       if (credential.user != null) {
         // Get user data from Firestore

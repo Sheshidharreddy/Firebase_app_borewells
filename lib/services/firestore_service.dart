@@ -1,7 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:servicemaster/models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+
+
 
 class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  
+final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  Future<UserModel> getCurrentUser() async {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final doc = await _db.collection('users').doc(uid).get();
+
+    if (!doc.exists) {
+      throw Exception('User document not found');
+    }
+
+    return UserModel.fromMap(doc.data()!, doc.id);
+   }
+  
 
   // Create or update document
   Future<void> setDocument({
@@ -22,7 +45,7 @@ class FirestoreService {
     required String documentId,
   }) async {
 
-    print('FIRESTORE getDocument: $collection / $documentId');
+
 
     try {
       return await _db.collection(collection).doc(documentId).get();
@@ -68,8 +91,6 @@ class FirestoreService {
     required Map<String, dynamic> data,
   }) async {
 
-     print('FIRESTORE updateDocument: $collection / $documentId');
-     
     try {
       await _db.collection(collection).doc(documentId).update(data);
     } catch (e) {

@@ -588,6 +588,8 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
           type: _selectedType,
           status: _selectedStatus,
           adminId: adminId,
+          ownerId: sessionUser.id,
+          createdByRole: sessionUser.role,
           organizationId: organizationId,
           model: _modelController.text.isNotEmpty ? _modelController.text.trim() : null,
           year: _yearController.text.isNotEmpty ? _yearController.text.trim() : null,
