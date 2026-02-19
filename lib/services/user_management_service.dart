@@ -28,14 +28,14 @@ class UserManagementService {
   }
 
   Future<bool> superAdminExists() async {
-    final  doc = await FirebaseFirestore.instance
+    final doc = await _firestore
       .collection('config')
       .doc('system')
       .get();
-      
-    return doc.exists && (doc.data()?['superAdminUid'] == true);
 
-    }
+    final uid = doc.data()?['superAdminUid'];
+    return doc.exists && uid != null && (uid is String ? uid.isNotEmpty : false);
+  }
 
   Future<void> createSuperAdmin({
     required String uid,
@@ -87,11 +87,7 @@ class UserManagementService {
       id: uid,
       email: email,
       role: 'admin',
-      name: name,
-      adminId: uid,
-      organizationId: 'org_$uid',
-      createdAt: now,
-      lastLogin: null,
+      createdAt: now
     );
   }
 
@@ -151,11 +147,7 @@ class UserManagementService {
       id: uid,
       email: email,
       role: 'user',
-      name: name,
-      adminId: adminId,
-      organizationId: organizationId,
       createdAt: now,
-      lastLogin: null,
     );
   }
 
@@ -232,4 +224,35 @@ class UserManagementService {
     }
     return doc;
   }
+
+Future<void> createUserWithRole({
+  required String email,
+  required String password,
+  required String role, // superadmin, admin, or user
+}) async {
+   try {
+    // Use secondary auth to avoid affecting primary signed-in user
+    final auth = await _ensureSecondaryAuth();
+    final credential = await auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    if (credential.user != null) {
+      final uid = credential.user!.uid;
+
+      // Create Firestore user document with minimal fields
+      await _firestore.collection('users').doc(uid).set({
+        'email': email,
+        'role': role,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+
+    await auth.signOut();
+  } catch (e) {
+    throw Exception('Failed to create user: $e');
+  }
+}
+
 }

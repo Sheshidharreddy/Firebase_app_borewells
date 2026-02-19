@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/vehicle_model.dart';
 import '../models/maintenance_log_model.dart';
 import '../services/test_maintenance_log_service.dart';
-import 'maintenance_detail_screen.dart';
 
 class AllMaintenanceLogsScreen extends StatefulWidget {
   final VehicleModel vehicle;

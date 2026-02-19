@@ -62,7 +62,7 @@ class SuperAdminDashboardScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome, ${currentUser.name ?? currentUser.email}',
+              'Welcome, ${currentUser.email}',
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -107,7 +107,7 @@ class SuperAdminDashboardScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const CreateUserScreen(isSuperAdmin: true),
+                  builder: (_) => const CreateUserScreen(),
                 ),
               );
             },
@@ -154,7 +154,10 @@ class SuperAdminDashboardScreen extends StatelessWidget {
                   children: admins.map((admin) {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(admin.name ?? admin.email),
+                      //display email  (no name field)
+                      title: Text(admin.email),
+
+                      // Show role explicity
                       subtitle: Text(admin.email),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
@@ -208,10 +211,8 @@ class SuperAdminDashboardScreen extends StatelessWidget {
                   children: users.map((user) {
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(user.name ?? user.email),
-                      subtitle: Text(
-                        '${user.email}\nAdmin ID: ${user.adminId}',
-                      ),
+                      title: Text(user.email),
+                      subtitle: Text(user.role),
                     );
                   }).toList(),
                 );
@@ -230,7 +231,7 @@ class SuperAdminDashboardScreen extends StatelessWidget {
         return AlertDialog(
           title: const Text('Delete Admin'),
           content: Text(
-            'Delete ${admin.name ?? admin.email}? Their assigned users will be detached.',
+            'Delete ${admin.email}',
           ),
           actions: [
             TextButton(
@@ -255,7 +256,7 @@ class SuperAdminDashboardScreen extends StatelessWidget {
       await _userManagementService.deleteAdmin(admin.id);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${admin.name ?? admin.email} deleted.')),
+        SnackBar(content: Text('${admin.email} deleted.')),
       );
     } catch (e) {
       if (!context.mounted) return;

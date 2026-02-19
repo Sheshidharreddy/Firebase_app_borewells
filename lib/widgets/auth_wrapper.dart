@@ -17,7 +17,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   final RoleService _roleService = RoleService();
   
   // Test mode flag
-  static const bool _useTestMode = true;
+  static const bool _useTestMode = false;
 
   @override
   Widget build(BuildContext context) {

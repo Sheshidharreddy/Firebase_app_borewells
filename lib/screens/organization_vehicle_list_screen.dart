@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../models/vehicle_model.dart';
-import '../services/organization_service.dart';
 import '../services/vehicle_service.dart';
 import 'user_vehicle_details_screen.dart';
+import 'add_edit_vehicle_screen.dart';
 
 class OrganizationVehicleListScreen extends StatefulWidget {
   final UserModel currentUser;
@@ -23,6 +23,7 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
   List<VehicleModel> _filteredVehicles = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  late bool _isAdmin;
 
   @override
   void initState() {
@@ -30,20 +31,16 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
     _loadVehicles();
   }
 
-  void _loadVehicles() async {
+  Future<void> _loadVehicles() async {
     setState(() => _isLoading = true);
     
     try {
       // For demo purposes, use demo data
-      final allVehicles = OrganizationService.getDemoVehicles();
-      final userVehicles = OrganizationService.filterVehiclesByUserAccess(
-        allVehicles,
-        widget.currentUser,
-      );
-      
+     final vehicles = await _vehicleService.getVehiclesForUser(widget.currentUser);
+     
       setState(() {
-        _vehicles = userVehicles;
-        _filteredVehicles = userVehicles;
+        _vehicles =vehicles;
+        _filteredVehicles = vehicles;
         _isLoading = false;
       });
     } catch (e) {
@@ -76,10 +73,13 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
 
   @override
   Widget build(BuildContext context) {
+     _isAdmin = widget.currentUser.role == 'admin' || 
+        widget.currentUser.role == 'superadmin';
+      final statusColor = _isAdmin ? Colors.purple : Colors.green;
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.currentUser.name}\'s Vehicles'),
-        backgroundColor: widget.currentUser.isAdmin ? Colors.purple : Colors.green,
+        title: Text('${widget.currentUser.email}\'s Vehicles'),
+        backgroundColor: _isAdmin ? Colors.purple : Colors.green,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -90,28 +90,42 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
       ),
       body: Column(
         children: [
-          _buildUserInfo(),
+          _buildUserInfo(_isAdmin, statusColor),
           _buildSearchBar(),
           Expanded(
             child: _isLoading ? _buildLoadingView() : _buildVehicleList(),
           ),
         ],
       ),
+            floatingActionButton: _isAdmin
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddEditVehicleScreen(),
+                  ),
+                );
+              },
+              backgroundColor: statusColor,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 
-  Widget _buildUserInfo() {
-    final organizationName = OrganizationService.getOrganizationName(widget.currentUser.organizationId);
+  Widget _buildUserInfo(bool _isAdmin, Color statusColor) {
+    final roleLabel = widget.currentUser.role.toUpperCase();
     
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: widget.currentUser.isAdmin ? Colors.purple[50] : Colors.green[50],
+        color: _isAdmin ? Colors.purple[50] : Colors.green[50],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: widget.currentUser.isAdmin ? Colors.purple[200]! : Colors.green[200]!,
+          color: _isAdmin ? Colors.purple[200]! : Colors.green[200]!,
         ),
       ),
       child: Column(
@@ -120,32 +134,24 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
           Row(
             children: [
               Icon(
-                widget.currentUser.isAdmin ? Icons.admin_panel_settings : Icons.person,
-                color: widget.currentUser.isAdmin ? Colors.purple : Colors.green,
+                _isAdmin ? Icons.admin_panel_settings : Icons.person,
+                color: _isAdmin ? Colors.purple : Colors.green,
                 size: 24,
               ),
               const SizedBox(width: 8),
               Text(
-                '${widget.currentUser.name} (${widget.currentUser.role.toUpperCase()})',
+                '${widget.currentUser.email} (${roleLabel.toUpperCase()})',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: widget.currentUser.isAdmin ? Colors.purple : Colors.green,
+                  color: _isAdmin ? Colors.purple : Colors.green,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Organization: $organizationName',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
+          ),  
           const SizedBox(height: 4),
           Text(
-            widget.currentUser.isAdmin
+            _isAdmin
                 ? 'Access: All vehicles in organization (${_vehicles.length} vehicles)'
                 : 'Access: Only assigned vehicles (${_vehicles.length} vehicles)',
             style: const TextStyle(
@@ -205,7 +211,7 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
             Text(
               _searchQuery.isNotEmpty
                   ? 'No vehicles match your search'
-                  : widget.currentUser.isAdmin
+                  : _isAdmin
                       ? 'No vehicles in your organization'
                       : 'No vehicles assigned to you',
               style: TextStyle(
@@ -214,7 +220,7 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
               ),
               textAlign: TextAlign.center,
             ),
-            if (_searchQuery.isEmpty && !widget.currentUser.isAdmin) ...[
+            if (_searchQuery.isEmpty && !_isAdmin) ...[
               const SizedBox(height: 8),
               Text(
                 'Contact your admin to get vehicle assignments',
@@ -268,7 +274,7 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(vehicle.status).withOpacity(0.1),
+                      color: _getStatusColor(vehicle.status).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -323,7 +329,7 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      vehicle.statusDisplayName,
+                      vehicle.status.name.replaceAll("_", ' ').toUpperCase(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -357,11 +363,11 @@ class _OrganizationVehicleListScreenState extends State<OrganizationVehicleListS
                     ),
                   ],
                   const Spacer(),
-                  if (vehicle.hasDriver) ...[
+                  if (vehicle.driverId != null && vehicle.driverId!.isNotEmpty) ...[
                     Icon(Icons.person, size: 16, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      vehicle.driverName!,
+                      vehicle.driverName ?? 'Driver',
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                   ],

@@ -39,10 +39,6 @@ class TestAuthService {
         id: 'test_${email.hashCode}',
         email: email,
         role: user['role']!,
-        name: user['name'],
-        adminId: user['adminId'] ??
-            (user['role'] == 'admin' ? 'test_admin' : 'test_admin_parent'),
-        organizationId: user['organization'] ?? 'org_default',
         createdAt: DateTime.now(),
       );
     }
