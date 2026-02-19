@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
 import '../models/vehicle_model.dart';
 import '../services/vehicle_service.dart';
-import '../services/test_vehicle_service.dart';
 import '../services/role_service.dart';
 import '../services/session_service.dart';
 import '../widgets/permission_widget.dart';
@@ -20,7 +18,6 @@ class AddEditVehicleScreen extends StatefulWidget {
 
 class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
   final VehicleService _vehicleService = VehicleService();
-  final TestVehicleService _testVehicleService = TestVehicleService();
   final RoleService _roleService = RoleService();
   final SessionService _sessionService = SessionService.instance;
   final _formKey = GlobalKey<FormState>();
@@ -39,33 +36,12 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
   VehicleType _selectedType = VehicleType.truck;
   VehicleStatus _selectedStatus = VehicleStatus.available;
   bool _isLoading = false;
-  final bool _useTestMode = true; // Enable test mode for now
-  bool _isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    _checkUserRole();
     if (widget.isEditing) {
       _populateForm();
-    }
-  }
-
-  Future<void> _checkUserRole() async {
-    try {
-      final isAdmin = await _roleService.isAdmin();
-      if (mounted) {
-        setState(() {
-          _isAdmin = isAdmin;
-        });
-      }
-    } catch (e) {
-      // Default to non-admin on error
-      if (mounted) {
-        setState(() {
-          _isAdmin = false;
-        });
-      }
     }
   }
 
@@ -557,11 +533,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
           );
         }
         
-        if (_useTestMode) {
-          await _testVehicleService.updateVehicle(updatedVehicle);
-        } else {
-          await _vehicleService.updateVehicle(updatedVehicle);
-        }
+        await _vehicleService.updateVehicle(updatedVehicle);
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -578,8 +550,10 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
         }
         
         final sessionUser = await _sessionService.requireCurrentUser();
-        final String adminId = sessionUser.isAdmin ? sessionUser.id : sessionUser.adminId;
-        final String organizationId = sessionUser.organizationId;
+        final String adminId = sessionUser.id;
+        final String organizationId = (sessionUser.organizationId?.isNotEmpty ?? false)
+            ? sessionUser.organizationId!
+            : 'org_$adminId';
 
         final newVehicle = VehicleModel(
           id: '', // Will be set by the service
@@ -588,9 +562,9 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
           type: _selectedType,
           status: _selectedStatus,
           adminId: adminId,
+          organizationId: organizationId,
           ownerId: sessionUser.id,
           createdByRole: sessionUser.role,
-          organizationId: organizationId,
           model: _modelController.text.isNotEmpty ? _modelController.text.trim() : null,
           year: _yearController.text.isNotEmpty ? _yearController.text.trim() : null,
           color: _colorController.text.isNotEmpty ? _colorController.text.trim() : null,
@@ -602,11 +576,7 @@ class _AddEditVehicleScreenState extends State<AddEditVehicleScreen> {
           updatedAt: now,
         );
         
-        if (_useTestMode) {
-          await _testVehicleService.addVehicle(newVehicle);
-        } else {
-          await _vehicleService.addVehicle(newVehicle);
-        }
+        await _vehicleService.addVehicle(newVehicle);
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

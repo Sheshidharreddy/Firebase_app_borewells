@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../models/vehicle_model.dart';
+import '../services/vehicle_service.dart';
 import 'add_edit_vehicle_screen.dart';
 import 'vehicles/vehicle_details_screen.dart';
 
@@ -10,29 +12,7 @@ class VehicleListScreen extends StatefulWidget {
 }
 
 class _VehicleListScreenState extends State<VehicleListScreen> {
-  final List<Map<String, dynamic>> _vehicles = [
-    {
-      'id': 'lorry-1',
-      'name': 'Lorry 1',
-      'nextMaintenance': 'Engine Oil – Due in 12 days',
-      'status': 'Yellow',
-      'color': Colors.orange,
-    },
-    {
-      'id': 'lorry-2',
-      'name': 'Lorry 2', 
-      'nextMaintenance': 'Wheel Maintenance – Overdue',
-      'status': 'Red',
-      'color': Colors.red,
-    },
-    {
-      'id': 'truck-a',
-      'name': 'Truck A',
-      'nextMaintenance': 'Air Filter – Due in 25 days',
-      'status': 'Green',
-      'color': Colors.green,
-    },
-  ];
+  final VehicleService _vehicleService = VehicleService();
 
   @override
   Widget build(BuildContext context) {
@@ -43,36 +23,58 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          // Header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.grey[100],
-            child: Text(
-              '${_vehicles.length} vehicle(s) found',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+      body: StreamBuilder<List<VehicleModel>>(
+        stream: _vehicleService.vehiclesStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Failed to load vehicles: ${snapshot.error}'),
               ),
-            ),
-          ),
-          
-          // Vehicle List
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _vehicles.length,
-              itemBuilder: (context, index) {
-                return _buildVehicleRow(_vehicles[index]);
-              },
-            ),
-          ),
-        ],
+            );
+          }
+
+          final vehicles = snapshot.data ?? const <VehicleModel>[];
+          if (vehicles.isEmpty) {
+            return const Center(
+              child: Text('No vehicles found. Add your first vehicle.'),
+            );
+          }
+
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                color: Colors.grey[100],
+                child: Text(
+                  '${vehicles.length} vehicle(s) found',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: vehicles.length,
+                  itemBuilder: (context, index) {
+                    return _buildVehicleRow(vehicles[index]);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _navigateToAddVehicle(),
+        onPressed: _navigateToAddVehicle,
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
@@ -81,25 +83,20 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
     );
   }
 
-  Widget _buildVehicleRow(Map<String, dynamic> vehicle) {
+  Widget _buildVehicleRow(VehicleModel vehicle) {
+    final Color statusColor = _statusColor(vehicle.status);
+    final String subtitle = vehicle.licensePlate.isNotEmpty
+        ? vehicle.licensePlate
+        : (vehicle.model ?? 'No details');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () {
-          print('🚗 Vehicle clicked: ${vehicle['name']}');
-          // Show visual feedback with SnackBar too
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Clicked ${vehicle['name']}'),
-              duration: const Duration(milliseconds: 1500),
-            ),
-          );
-          
-          // Navigate to VehicleDetailsScreen
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => VehicleDetailsScreen(vehicleId: vehicle['id']),
+              builder: (_) => VehicleDetailsScreen(vehicleId: vehicle.id),
             ),
           );
         },
@@ -118,7 +115,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      vehicle['name'],
+                      vehicle.name,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -126,10 +123,10 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      vehicle['nextMaintenance'],
+                      subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: vehicle['color'],
+                        color: Colors.grey[700],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -139,11 +136,11 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: vehicle['color'],
+                  color: statusColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  vehicle['status'],
+                  vehicle.statusDisplayName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -164,5 +161,18 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
         builder: (context) => const AddEditVehicleScreen(),
       ),
     );
+  }
+
+  Color _statusColor(VehicleStatus status) {
+    switch (status) {
+      case VehicleStatus.available:
+        return Colors.green;
+      case VehicleStatus.inUse:
+        return Colors.blue;
+      case VehicleStatus.maintenance:
+        return Colors.orange;
+      case VehicleStatus.outOfService:
+        return Colors.red;
+    }
   }
 }

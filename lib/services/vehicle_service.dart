@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/vehicle_model.dart';
 import '../models/user_model.dart';
 import 'firestore_service.dart';
-import 'organization_service.dart';
 
 class VehicleService {
   final FirestoreService _firestoreService = FirestoreService();
@@ -78,27 +76,38 @@ bool _canDeleteVehicle({
   }
 
   // Add new vehicle
- Future<String> addVehicle(VehicleModel vehicle) async {
-  final currentUser = await _firestoreService.getCurrentUser();
-  final uid = currentUser.id;
-  final vehicleId = '${uid}_${DateTime.now().millisecondsSinceEpoch}';
+  Future<String> addVehicle(VehicleModel vehicle) async {
+    try {
+      final currentUser = await _firestoreService.getCurrentUser();
+      
+      // Only admin and superadmin can add vehicles
+      if (currentUser.role != 'admin' &&
+          currentUser.role != 'super_admin' &&
+          currentUser.role != 'superadmin') {
+        throw Exception('Unauthorized: only admins can add vehicles');
+      }
 
-  final newVehicle = vehicle.copyWith(
-    id: vehicleId,
-    ownerId: uid,
-    adminId: currentUser.role == 'admin' ? uid : currentUser.adminId!,
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
-  );
+      final uid = currentUser.id;
+      final vehicleId = '${uid}_${DateTime.now().millisecondsSinceEpoch}';
 
-  await _firestoreService.setDocument(
-    collection: _collection,
-    documentId: vehicleId,
-    data: newVehicle.toMap(),
-  );
+      final newVehicle = vehicle.copyWith(
+        id: vehicleId,
+        ownerId: uid,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
 
-  return vehicleId;
-}
+      await _firestoreService.setDocument(
+        collection: _collection,
+        documentId: vehicleId,
+        data: newVehicle.toMap(),
+      );
+
+      return vehicleId;
+    } catch (e) {
+      throw Exception('Failed to add vehicle: $e');
+    }
+  }
 
   // Update vehicle
  Future<void> updateVehicle(VehicleModel vehicle) async {
@@ -244,29 +253,29 @@ bool _canDeleteVehicle({
     }
   }
 
-  // Get vehicles filtered by user's organization and role
+  // Get vehicles for current user based on role
   Future<List<VehicleModel>> getVehiclesForUser(UserModel user) async {
     try {
-      final allVehicles = await getAllVehicles();
-      return OrganizationService.filterVehiclesByUserAccess(allVehicles, user);
+      if (user.role == 'super_admin' || user.role == 'superadmin') {
+        return getAllVehicles();
+      }
+
+      if (user.role == 'admin') {
+        // Admins see vehicles they own
+        final snapshot = await FirebaseFirestore.instance
+            .collection(_collection)
+            .where('ownerId', isEqualTo: user.id)
+            .get();
+        
+        return snapshot.docs.map((doc) {
+          return VehicleModel.fromMap(doc.data(), doc.id);
+        }).toList();
+      }
+
+      // Regular users see all vehicles (role-based filtering in Firestore rules)
+      return getAllVehicles();
     } catch (e) {
       throw Exception('Failed to get vehicles for user: $e');
-    }
-  }
-
-  // Get vehicles by organization (for admin users)
-  Future<List<VehicleModel>> getVehiclesByOrganization(String organizationId) async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection(_collection)
-          .where('organizationId', isEqualTo: organizationId)
-          .get();
-      
-      return snapshot.docs.map((doc) {
-        return VehicleModel.fromMap(doc.data(), doc.id);
-      }).toList();
-    } catch (e) {
-      throw Exception('Failed to get vehicles by organization: $e');
     }
   }
 
@@ -308,7 +317,6 @@ bool _canDeleteVehicle({
     }
 
     return collection
-        .where('adminId', isEqualTo: user.adminId)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => VehicleModel.fromMap(doc.data(), doc.id))

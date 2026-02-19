@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
-import '../screens/super_admin_dashboard_screen.dart';
 import '../services/session_service.dart';
 import '../services/user_management_service.dart';
 import 'admin_home_screen.dart';
@@ -237,6 +236,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null && mounted) {
         _navigateBasedOnRole(user);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login succeeded, but user profile could not be loaded.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -407,13 +413,13 @@ class _LoginScreenState extends State<LoginScreen> {
     SessionService.instance.setCurrentUser(user);
     Widget targetScreen;
     if (user.role == 'super_admin') {
-      targetScreen = SuperAdminDashboardScreen(currentUser: user);
+      targetScreen = const AdminHomeScreen(); // TODO: SuperAdminDashboardScreen
     } else if (user.role == 'admin') {
       targetScreen = const AdminHomeScreen();
     } else {
       targetScreen = UserDashboardScreen(
         userId: user.id,
-        userName: user.name ?? user.email,
+        userName: user.email,
       );
     }
 

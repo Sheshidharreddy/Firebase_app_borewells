@@ -6,28 +6,12 @@ import 'session_service.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirestoreService _firestoreService = FirestoreService();
-  
-  // Test mode flag
-  static const bool _useTestMode = false;
 
   // Get current user
-  User? get currentUser {
-    if (_useTestMode) {
-      // In test mode, we don't use Firebase User objects
-      return null;
-    }
-    return _auth.currentUser;
-  }
+  User? get currentUser => _auth.currentUser;
 
   // Auth state changes stream
-  Stream<User?> get authStateChanges {
-    if (_useTestMode) {
-      // In test mode, return a stream that never has data
-      // AuthWrapper will handle test authentication differently
-      return Stream<User?>.empty();
-    }
-    return _auth.authStateChanges();
-  }
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   // Sign in with email and password
   Future<UserModel?> signInWithEmailAndPassword({
@@ -40,50 +24,26 @@ class AuthService {
         password: password,
       );
 
-      print('SIGNED IN UID: ${credential.user?.uid}');
-      print('CURRENT USER UID: ${FirebaseAuth.instance.currentUser?.uid}');
-      
-      if (credential.user != null) {
-        // Get user data from Firestore
-        final userDoc = await _firestoreService.getDocument(
-          collection: 'users',
-          documentId: credential.user!.uid,
-        );
-        
-        if (userDoc.exists) {
-          // Update last login
-          await _firestoreService.updateDocument(
-            collection: 'users',
-            documentId: credential.user!.uid,
-            data: {'lastLogin': DateTime.now()},
-          );
-          
-          return UserModel.fromMap(
-            userDoc.data() as Map<String, dynamic>,
-            credential.user!.uid,
-          );
-        } else {
-          // Create user document if it doesn't exist (fallback)
-          final newUser = UserModel(
-            id: credential.user!.uid,
-            email: credential.user!.email!,
-            role: 'user', // default role
-            adminId: 'admin_default',
-            organizationId: 'org_default',
-            createdAt: DateTime.now(),
-            lastLogin: DateTime.now(),
-          );
-          
-          await _firestoreService.setDocument(
-            collection: 'users',
-            documentId: credential.user!.uid,
-            data: newUser.toMap(),
-          );
-          
-          return newUser;
-        }
+      if (credential.user == null) {
+        throw Exception('Authentication succeeded but no user session was returned');
       }
-      return null;
+
+      final uid = credential.user!.uid;
+      final userDoc = await _firestoreService.getDocument(
+        collection: 'users',
+        documentId: uid,
+      );
+
+      if (!userDoc.exists) {
+        throw Exception(
+          'User profile not found for uid "$uid". Create Firestore document at users/$uid.',
+        );
+      }
+
+      return UserModel.fromMap(
+        userDoc.data() as Map<String, dynamic>,
+        uid,
+      );
     } catch (e) {
       throw Exception('Sign in failed: $e');
     }
@@ -94,33 +54,28 @@ class AuthService {
     required String email,
     required String password,
     required String role,
-    String? name,
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
+
       if (credential.user != null) {
-        // Create user document
+        // Create user document in Firestore
         final newUser = UserModel(
           id: credential.user!.uid,
           email: email,
           role: role,
-          name: name,
-          adminId: role == 'admin' ? credential.user!.uid : 'admin_default',
-          organizationId: 'org_default',
           createdAt: DateTime.now(),
-          lastLogin: DateTime.now(),
         );
-        
+
         await _firestoreService.setDocument(
           collection: 'users',
           documentId: credential.user!.uid,
           data: newUser.toMap(),
         );
-        
+
         return newUser;
       }
       return null;
@@ -138,7 +93,7 @@ class AuthService {
           collection: 'users',
           documentId: user.uid,
         );
-        
+
         if (userDoc.exists) {
           return UserModel.fromMap(
             userDoc.data() as Map<String, dynamic>,
